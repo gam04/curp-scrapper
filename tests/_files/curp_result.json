@@ -1,0 +1,31 @@
+{
+    "mensaje": "Búsqueda exitosa por curp",
+    "codigo": "01",
+    "registros": [
+        {
+            "parametro": "?curp=HLIP570111HOCFTB15&pcurp=5E7C3AB6F7FCD699C574E05091449216&hash=753f3fbb8ea3327dcd0a80b10f832b620bffa6f0",
+            "fechaNacimiento": "12\/12\/1993",
+            "docProbatorio": 1,
+            "segundoApellido": "FOO",
+            "curp": "HLIP570111HOCFTB15",
+            "nombres": "BAR",
+            "primerApellido": "FOO",
+            "sexo": "HOMBRE",
+            "claveEntidad": "OC",
+            "statusCurp": "RCN",
+            "nacionalidad": "MEXICO",
+            "entidad": "OAXACA",
+            "datosDocProbatorio": {
+                "entidadRegistro": "OAXACA",
+                "tomo": "",
+                "claveMunicipioRegistro": "044",
+                "anioReg": "1995",
+                "claveEntidadRegistro": "20",
+                "foja": "",
+                "numActa": "00078",
+                "libro": "",
+                "municipioRegistro": "VILLA AZUL"
+            }
+        }
+    ]
+}

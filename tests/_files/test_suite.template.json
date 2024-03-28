@@ -1,0 +1,14 @@
+{
+    "proxy": {
+        "user": "",
+        "password": "",
+        "host": "",
+        "port": ""
+    },
+    "case": [
+        [
+            "ESTATUS",
+            "CURP"
+        ]
+    ]
+}

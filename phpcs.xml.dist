@@ -10,4 +10,10 @@
 
     <rule ref="Ramsey"/>
 
+     <rule ref="Ramsey">
+      <exclude name="Squiz.Functions.GlobalFunction"/>
+      <!-- Forbid the use of "Exception" in an exception class name (e.g., FooException) -->
+      <exclude name="SlevomatCodingStandard.Classes.SuperfluousExceptionNaming"/>
+     </rule>
+
 </ruleset>
