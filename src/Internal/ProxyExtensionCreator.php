@@ -12,8 +12,6 @@ use function file_put_contents;
 use function implode;
 use function mkdir;
 use function str_replace;
-use function sys_get_temp_dir;
-use function uniqid;
 
 /**
  * @internal
@@ -25,17 +23,16 @@ class ProxyExtensionCreator
     /**
      * @param string[] $byPassList
      */
-    public function __invoke(Proxy $proxy, array $byPassList = []): string
+    public function __invoke(Proxy $proxy, string $path, array $byPassList = []): void
     {
-        $unpacked = sys_get_temp_dir() . '/' . uniqid();
-
         $noProxyList = $byPassList === [] ? '' : "'" . implode("','", $byPassList) . "'";
 
-        if (!mkdir($unpacked)) {
+        if (!mkdir($path)) {
             throw new RuntimeException('Unable to create the directory');
         }
+
         file_put_contents(
-            $unpacked . '/manifest.json',
+            $path . '/manifest.json',
             (string) file_get_contents(__DIR__ . '/../../resources/manifest.json'),
         );
         $background = (string) file_get_contents(__DIR__ . '/../../resources/background.js');
@@ -44,8 +41,6 @@ class ProxyExtensionCreator
             [$proxy->ip, $proxy->port, $proxy->username ?? '', $proxy->password ?? '', $noProxyList],
             $background,
         );
-        file_put_contents($unpacked . '/background.js', $background);
-
-        return $unpacked;
+        file_put_contents($path . '/background.js', $background);
     }
 }

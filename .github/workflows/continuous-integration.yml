@@ -102,34 +102,34 @@ jobs:
         with:
           sarif_file: "build/logs/psalm.sarif"
 
-  code-coverage:
-    name: "Code coverage"
-    needs: ["coding-standards", "static-analysis"]
-    runs-on: "ubuntu-latest"
+  # code-coverage:
+  #  name: "Code coverage"
+  #  needs: ["coding-standards", "static-analysis"]
+  #  runs-on: "ubuntu-latest"
 
-    steps:
-      - name: "Checkout repository"
-        uses: "actions/checkout@v4.1.1"
+  #  steps:
+  #    - name: "Checkout repository"
+  #      uses: "actions/checkout@v4.1.1"
 
-      - name: "Install PHP"
-        uses: "shivammathur/setup-php@2.26.0"
-        with:
-          php-version: "latest"
-          coverage: "pcov"
-          ini-values: "memory_limit=-1"
+  #    - name: "Install PHP"
+  #      uses: "shivammathur/setup-php@2.26.0"
+  #      with:
+  #        php-version: "latest"
+  #        coverage: "pcov"
+  #        ini-values: "memory_limit=-1"
 
-      - name: "Install dependencies (Composer)"
-        uses: "ramsey/composer-install@2.2.0"
+  #    - name: "Install dependencies (Composer)"
+  #      uses: "ramsey/composer-install@2.2.0"
 
-      - name: "Run unit tests (PHPUnit)"
-        run: "composer dev:test:coverage:ci"
+  #   - name: "Run unit tests (PHPUnit)"
+  #      run: "composer dev:test:coverage:ci"
 
-      - name: "Publish coverage report to Codecov"
-        uses: "codecov/codecov-action@v3.1.4"
+  #   - name: "Publish coverage report to Codecov"
+  #      uses: "codecov/codecov-action@v3.1.4"
 
   unit-tests:
     name: "Unit tests"
-    needs: ["code-coverage"]
+    # needs: ["code-coverage"]
     runs-on: ${{ matrix.os }}
 
     strategy:

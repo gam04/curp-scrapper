@@ -3,11 +3,11 @@
     "codigo": "01",
     "registros": [
         {
-            "parametro": "?curp=HLIP570111HOCFTB15&pcurp=5E7C3AB6F7FCD699C574E05091449216&hash=753f3fbb8ea3327dcd0a80b10f832b620bffa6f0",
+            "parametro": "?curp=PEPJ190228HASRRVA0&pcurp=5E7C3AB6F7FCD699C574E05091449216&hash=753f3fbb8ea3327dcd0a80b10f832b620bffa6f0",
             "fechaNacimiento": "12\/12\/1993",
             "docProbatorio": 1,
             "segundoApellido": "FOO",
-            "curp": "HLIP570111HOCFTB15",
+            "curp": "PEPJ190228HASRRVA0",
             "nombres": "BAR",
             "primerApellido": "FOO",
             "sexo": "HOMBRE",

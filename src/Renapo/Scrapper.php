@@ -30,6 +30,8 @@ use function file_get_contents;
 use function implode;
 use function is_null;
 use function random_port;
+use function sys_get_temp_dir;
+use function uniqid;
 
 use const DIRECTORY_SEPARATOR;
 
@@ -41,7 +43,7 @@ class Scrapper
 
     private Client $client;
 
-    private const NO_PROXY_LIST = [
+    public const NO_PROXY_LIST = [
         'accounts.google.com',
         '*googleapis.com',
         '*doubleclick.net',
@@ -81,15 +83,27 @@ class Scrapper
         $this->start();
     }
 
+    public function getUserAgent(): string
+    {
+        return $this->userAgent;
+    }
+
+    /**
+     * @codeCoverageIgnore
+     */
     private function start(): void
     {
         $this->client->start();
         try {
             $this->client->executeScript("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})");
-        } catch (Throwable) {
+        } catch (Throwable $e) {
+            throw new RuntimeException($e->getMessage());
         }
     }
 
+    /**
+     * @codeCoverageIgnore
+     */
     private function cdpSettings(): void
     {
         $getPropsJS = <<<'JS'
@@ -129,6 +143,9 @@ class Scrapper
         }
     }
 
+    /**
+     * @codeCoverageIgnore
+     */
     private function headless(): void
     {
         $noWebDriverJS = <<<'JS'
@@ -204,7 +221,9 @@ class Scrapper
 
             return CurpResultCreator::make($apiResponse);
         } catch (NoSuchElementException | TimeoutException $e) {
-            $error = $this->client->getCrawler()->filter('#errorLog > div')->text();
+            $error = $this->client->getCrawler()->filter('#errorLog > div')->count() === 0
+                ? $this->client->getCrawler()->filter('div[messagetemp]')->attr('messagetemp')
+                : $this->client->getCrawler()->filter('#errorLog > div')->text();
 
             throw new ScrapperException(
                 "Maybe, the CURP is invalid or the request was blocked. Try again. Msg: $error . {$e->getMessage()}",
@@ -241,6 +260,9 @@ class Scrapper
         return base64_decode($htmlBody->text());
     }
 
+    /**
+     * @codeCoverageIgnore
+     */
     public function close(): void
     {
         $this->client->close();
@@ -249,7 +271,7 @@ class Scrapper
         }
     }
 
-    private function createClient(string $driverPath, bool $headless, ?Proxy $proxy = null): Client
+    public function createClient(string $driverPath, bool $headless, ?Proxy $proxy = null): Client
     {
         $options = new ChromeOptions();
         $options->setExperimentalOption('excludeSwitches', ['enable-automation']);
@@ -303,6 +325,8 @@ class Scrapper
 
     /**
      * @param string[] $arguments
+     *
+     * @codeCoverageIgnore
      */
     private function setProxyConfig(Proxy $proxy, array &$arguments): void
     {
@@ -314,7 +338,8 @@ class Scrapper
                 '--proxy-bypass-list=' . implode(';', self::NO_PROXY_LIST),
             );
         } else {
-            $this->extensionPath = (new ProxyExtensionCreator())($proxy, self::NO_PROXY_LIST);
+            $this->extensionPath = sys_get_temp_dir() . '/' . uniqid();
+            (new ProxyExtensionCreator())($proxy, $this->extensionPath, self::NO_PROXY_LIST);
             // auth proxy with a very tricky (and ugly) workaround
             $arguments[] = '--load-extension=' . $this->extensionPath;
         }

@@ -18,8 +18,8 @@ function browser_app_data(): string
      * @psalm-suppress PossiblyFalseOperand
      * APPDATA & HOME are evaluated above
      */
-    return match (strtolower(PHP_OS)) {
-        'windows', 'winnt' => getenv('APPDATA') . DIRECTORY_SEPARATOR . 'undetectedWebDriverPHP',
+    return match (strtolower(PHP_OS_FAMILY)) {
+        'windows' => getenv('APPDATA') . DIRECTORY_SEPARATOR . 'undetectedWebDriverPHP',
         'linux' => getenv('HOME') . DIRECTORY_SEPARATOR . '.local' . DIRECTORY_SEPARATOR . 'undetectedWebDriverPHP',
         default => '',
     };

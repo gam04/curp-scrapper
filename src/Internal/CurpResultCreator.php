@@ -14,6 +14,7 @@ use Gam\CurpScrapper\Model\Entidad;
 use Gam\CurpScrapper\Model\EntidadRegistro;
 use Gam\CurpScrapper\Model\Sexo;
 use InvalidArgumentException;
+use JsonException;
 
 use function json_decode;
 
@@ -24,6 +25,9 @@ use const JSON_THROW_ON_ERROR;
  */
 class CurpResultCreator
 {
+    /**
+     * @throws JsonException
+     */
     public static function makeFromJson(string $contents): CurpResult
     {
         /**
@@ -53,7 +57,7 @@ class CurpResultCreator
          *   }
          * }}} $data The array containing the data structure described above.
          */
-        $data = (array) json_decode($contents, true, JSON_THROW_ON_ERROR);
+        $data = (array) json_decode($contents, true, 512, JSON_THROW_ON_ERROR);
 
         return self::make($data);
     }

@@ -2,11 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Gam\Test\CurpScrapper\Model;
+namespace Gam\Test\CurpScrapper\Unit\Model;
 
 use Gam\CurpScrapper\Model\CurpEstatus;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
+use ValueError;
 
+#[CoversClass(CurpEstatus::class)]
 class CurpStatusTest extends TestCase
 {
     /**
@@ -36,9 +39,16 @@ class CurpStatusTest extends TestCase
         self::assertEquals($estatus->isActive(), $isActive);
     }
 
-    public function testFromName(): void
+    public function testTryFromName(): void
     {
         self::assertEquals(CurpEstatus::BDP, CurpEstatus::tryFromName('BDP'));
         self::assertNull(CurpEstatus::tryFromName('DOES_NOT_EXIST'));
+    }
+
+    public function testFromName(): void
+    {
+        $this->expectException(ValueError::class);
+        self::assertEquals(CurpEstatus::BDP, CurpEstatus::tryFromName('BDP'));
+        CurpEstatus::fromName('DOES_NOT_EXIST');
     }
 }

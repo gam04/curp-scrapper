@@ -199,3 +199,7 @@ security issue in software that is maintained in this repository, please read
 
 gam/curp-scrapper is copyright © [Antonio Gamboa](https://somegamboapage.com).
 All rights reserved.
+
+## TODO
+
+- Code Coverage

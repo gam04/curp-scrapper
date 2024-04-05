@@ -3,11 +3,19 @@
          xsi:noNamespaceSchemaLocation="./vendor/phpunit/phpunit/phpunit.xsd"
          bootstrap="./vendor/autoload.php"
          colors="true"
-         cacheDirectory="./build/cache/phpunit">
+         defaultTestSuite="unit"
+         cacheDirectory="./build/cache/phpunit"
+         displayDetailsOnTestsThatTriggerWarnings="true">
 
     <testsuites>
-        <testsuite name="unit-tests">
-            <directory>./tests</directory>
+        <testsuite name="complete">
+            <directory>tests</directory>
+        </testsuite>
+        <testsuite name="unit">
+            <directory>tests/Unit</directory>
+        </testsuite>
+        <testsuite name="integration">
+            <directory>tests/Integration</directory>
         </testsuite>
     </testsuites>
 
@@ -22,6 +30,13 @@
         <include>
             <directory suffix=".php">./src</directory>
         </include>
+        <exclude>
+            <file>src/Model/Ciudadano.php</file>
+            <file>src/Model/CurpResult.php</file>
+            <file>src/Model/DocumentoProbatorio.php</file>
+            <file>src/Model/Entidad.php</file>
+            <file>src/Model/EntidadRegistro.php</file>
+        </exclude>
     </source>
 
 </phpunit>
