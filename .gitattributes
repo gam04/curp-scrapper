@@ -3,8 +3,10 @@
 /.gitattributes             export-ignore
 /.github/                   export-ignore
 /.gitignore                 export-ignore
-/bin/                       export-ignore
-/build/                     export-ignore
+/build/cache                export-ignore
+/build/coverage             export-ignore
+/build/logs                 export-ignore
+/build/junit.xml            export-ignore
 /captainhook.json           export-ignore
 /CHANGELOG.md               export-ignore
 /codecov.yml                export-ignore
@@ -17,6 +19,5 @@
 /phpunit.xml.dist           export-ignore
 /psalm-baseline.xml         export-ignore
 /psalm.xml                  export-ignore
-/resources/                 export-ignore
 /SECURITY.md                export-ignore
 /tests/                     export-ignore
