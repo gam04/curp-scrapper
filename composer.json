@@ -1,7 +1,7 @@
 {
     "name": "gam/curp-scrapper",
     "description": "CURP Scrapper",
-    "license": "Proprietary",
+    "license": "MIT",
     "type": "library",
     "keywords": [
         "curp",
