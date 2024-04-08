@@ -41,6 +41,9 @@
             "Gam\\Test\\CurpScrapper\\": "tests/"
         }
     },
+    "bin": [
+        "bin/driver.php"
+    ],
     "config": {
         "allow-plugins": {
             "captainhook/plugin-composer": true,
