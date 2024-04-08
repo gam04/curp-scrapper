@@ -54,7 +54,7 @@ class Scrapper
         '*.png',
     ];
 
-    private const DEFAULT_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+    public const DEFAULT_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
     . 'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 Edg/122.0.0.0';
 
     private ?string $extensionPath;
@@ -182,10 +182,22 @@ class Scrapper
     {
         $this->headless();
         $this->cdpSettings();
+
         $this->client->get(self::MAIN_URL)->submitForm('Buscar', ['curp' => $curp->getContent()]);
 
         try {
-            $this->client->waitFor('#download');
+            // wait for [valid response(downlaod button), error message (div's)]
+            $cr = $this->client->waitFor('#download, div[messagetemp], #errorLog > div');
+
+            if ($cr->filter('#errorLog > div')->count() > 0) {
+                throw new ScrapperException($cr->filter('#errorLog > div')->text());
+            }
+
+            if ($cr->filter('div[messagetemp]')->count() > 0) {
+                throw new ScrapperException(
+                    $cr->filter('div[messagetemp]')->attr('messagetemp') ?? 'UNDEFINED',
+                );
+            }
 
             /**
              * @var array{mensaje: string, codigo: string, registros: array{0: array{
@@ -213,6 +225,7 @@ class Scrapper
              *     municipioRegistro: string
              *   }
              * }}} $apiResponse The array containing the data structure described above.
+             * En realidad, esto tira un JavascriptCodeErrorException, pero en la doc está expuesto como Exception
              */
             $apiResponse = (array) $this->client->executeScript(<<<'JS'
             let a = Ember.Namespace.NAMESPACES[1].__container__.lookup('-view-registry:main')['ember252']['response'];
@@ -221,15 +234,18 @@ class Scrapper
 
             return CurpResultCreator::make($apiResponse);
         } catch (NoSuchElementException | TimeoutException $e) {
-            $error = $this->client->getCrawler()->filter('#errorLog > div')->count() === 0
-                ? $this->client->getCrawler()->filter('div[messagetemp]')->attr('messagetemp')
-                : $this->client->getCrawler()->filter('#errorLog > div')->text();
+            $this->close();
 
-            throw new ScrapperException(
-                "Maybe, the CURP is invalid or the request was blocked. Try again. Msg: $error . {$e->getMessage()}",
-            );
+            throw new ScrapperException("Invalid or unexpected HTML response: {$e->getMessage()}");
+
             // phpcs:ignore
         } catch (Exception $e) {
+            $this->close();
+
+            if ($e instanceof ScrapperException) {
+                throw $e;
+            }
+
             throw new ScrapperException(
                 'The JS code was not succesfull executed. Possibly, the RENAPO page has been changed: ' .
                 $e->getMessage(),
@@ -265,7 +281,7 @@ class Scrapper
      */
     public function close(): void
     {
-        $this->client->close();
+        $this->client->quit();
         if (!is_null($this->extensionPath)) {
             delete_directory($this->extensionPath);
         }
