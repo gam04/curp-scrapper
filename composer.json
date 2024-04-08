@@ -42,7 +42,7 @@
         }
     },
     "bin": [
-        "bin/driver.php"
+        "bin/driver"
     ],
     "config": {
         "allow-plugins": {
