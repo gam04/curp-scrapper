@@ -3,8 +3,17 @@
 
 declare(strict_types=1);
 
+if (PHP_SAPI !== 'cli') {
+    throw new RuntimeException('This script must be run from the command line.');
+}
+
+
 $path = __DIR__ . '/../build/';
 $bdiCommand = __DIR__ . '/../vendor/bin/bdi';
+
+if (!file_exists($bdiCommand)) {
+    $bdiCommand = __DIR__ . '/../../../bin/bdi';
+}
 
 if (!file_exists($bdiCommand)) {
     throw new RuntimeException('The bdi package is not installed');
