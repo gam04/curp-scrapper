@@ -22,18 +22,16 @@ use Throwable;
 
 use function array_push;
 use function base64_decode;
-use function browser_app_data;
 use function count;
 use function delete_directory;
 use function file_exists;
 use function file_get_contents;
+use function getenv;
 use function implode;
 use function is_null;
 use function random_port;
 use function sys_get_temp_dir;
 use function uniqid;
-
-use const DIRECTORY_SEPARATOR;
 
 class Scrapper
 {
@@ -67,7 +65,7 @@ class Scrapper
         string $driverPath = __DIR__ . '/../../build/chromedriver.exe',
         bool $headless = true,
         ?Proxy $proxy = null,
-        ?string $userAgent = null,
+        ?string $dataDir = null,
     ) {
         if (!file_exists($driverPath)) {
             throw new InvalidArgumentException(
@@ -75,8 +73,8 @@ class Scrapper
             );
         }
         $this->extensionPath = null;
-        $this->userAgent = $userAgent ?? self::DEFAULT_UA;
-        $this->client = $this->createClient($driverPath, $headless, $proxy);
+        $this->userAgent = self::DEFAULT_UA;
+        $this->client = $this->createClient($driverPath, $headless, $proxy, $dataDir);
         /** @var RemoteWebDriver $driver */
         $driver = $this->client->getWebDriver();
         $this->devTools = new ChromeDevToolsDriver($driver);
@@ -287,16 +285,19 @@ class Scrapper
         }
     }
 
-    public function createClient(string $driverPath, bool $headless, ?Proxy $proxy = null): Client
-    {
+    public function createClient(
+        string $driverPath,
+        bool $headless,
+        ?Proxy $proxy = null,
+        ?string $dataDir = null,
+    ): Client {
         $options = new ChromeOptions();
         $options->setExperimentalOption('excludeSwitches', ['enable-automation']);
         $options->setExperimentalOption('useAutomationExtension', false);
 
-        $dataDir = browser_app_data() . DIRECTORY_SEPARATOR . 'chrome_user-data';
-
-        if (file_exists($dataDir)) {
-            delete_directory($dataDir);
+        if (($binaryPath = getenv('SCRAPPER_CHROME_BINARY')) !== false) {
+            // phpcs:ignore
+            $_SERVER['PANTHER_CHROME_BINARY'] = $binaryPath;
         }
 
         $prefs = [
@@ -307,7 +308,6 @@ class Scrapper
         $options->setExperimentalOption('prefs', $prefs);
 
         $arguments = [
-            '--user-data-dir=' . $dataDir,
             '--no-default-browser-check',
             '--no-first-run',
             '--no-service-autorun',
@@ -318,6 +318,13 @@ class Scrapper
             '--disable-plugins',
             '--disable-dev-shm-usage',
         ];
+
+        if ($dataDir !== null) {
+            if (file_exists($dataDir)) {
+                delete_directory($dataDir);
+            }
+            $arguments[] = '--user-data-dir=' . $dataDir;
+        }
 
         if ($headless) {
             array_push($arguments, '--headless=new', '--window-size=1200,1100', '--disable-gpu');

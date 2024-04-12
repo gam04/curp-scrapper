@@ -49,14 +49,11 @@ composer require gam/curp-scrapper
 Antes de usar el paquete es necesario instalar un navegador basado en chromium y su
 respectivo `webdriver`:
 
-1. Instalar [Chrome](https://www.google.com/chrome/)
-   o [Chromium](https://www.chromium.org/getting-involved/download-chromium/)
-2. Instalar el correspondiente [webdriver](https://chromedriver.com/) o simplemente
-   puedes ejecutar:
+1. Instalar [Chrome](https://www.google.com/chrome/) o [Chromium](https://www.chromium.org/getting-involved/download-chromium/)
+2. Instalar el correspondiente [webdriver](https://chromedriver.com/) o simplemente puedes ejecutar:
    ```shell
    # Instala el driver correspondiente a la version de Chrome/Chromium instalada
-   # el driver se mueve a build/
-   composer scrapper:driver
+   php vendor/bin/driver
    ```
 
 ## Usage
@@ -181,6 +178,25 @@ es decir, establecer un proxy local sin autenticación _encima_ del proxy objeti
 Puedes utilizar [mitmproxy](https://docs.mitmproxy.org/stable/concepts-modes/#upstream-proxy)
 para este proposito.
 -->
+
+### Configuraciones
+
+En ciertos es escenarios puede ser requerido cambiar algunos parametros del scrapper.
+
+- Path del binario de chrome: Si no es posible ubicarlo en las rutas por defecto, puede
+  especificar la ruta absoluta del binario de chrome con la variable de entorno `SCRAPPER_CHROME_BINARY`
+  ```php
+  putenv('SCRAPPER_CHROME_BINARY=/path/to/binary.exe');
+  ```
+- Path del webdriver: Si deseas especificar otra ruta para el webdriver (chromedriver.exe):
+  ```php
+  $scrapper = new \Gam\CurpScrapper\Renapo\Scrapper(driverPath: '/path/to/driver.exe')
+  ```
+- Directorio temporal de chrome: Si no es posible crear el directorio temporal por defecto,
+  puede especificar una ruta alterna:
+  ```php
+  $scrapper = new \Gam\CurpScrapper\Renapo\Scrapper(dataDir: '/path/to/temp-dir');
+  ```
 
 ## Contributing
 
