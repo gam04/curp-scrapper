@@ -12,15 +12,13 @@ use Gam\CurpScrapper\Renapo\Scrapper;
 use Gam\CurpScrapper\Renapo\ScrapperException;
 use Gam\Test\CurpScrapper\TestCase;
 use JsonException;
+use LogicException;
 
 use function boolval;
 use function getenv;
 
 class ScrapperTest extends TestCase
 {
-    /**
-     * @throws JsonException
-     */
     protected function setUp(): void
     {
         parent::setUp();
@@ -41,12 +39,23 @@ class ScrapperTest extends TestCase
 
     /**
      * @throws ScrapperException
+     */
+    public function testThrowLogicExceptionWhenStartWasNotCalled(): void
+    {
+        $this->expectException(LogicException::class);
+        $scrapper = new Scrapper(headless: boolval(getenv('HEADLESS', true)));
+        $scrapper->getPdfFromCurp(new Curp('XEXX010101HNEXXXA4'));
+    }
+
+    /**
+     * @throws ScrapperException
      *
      * @dataProvider curpProvider
      */
     public function testGetCurpDataNoProxy(string $status, string $curp): CurpResult
     {
         $scrapper = new Scrapper(headless: boolval(getenv('HEADLESS', true)));
+        $scrapper->start();
         $result = $scrapper->getCurpData(new Curp($curp));
         self::assertEquals(CurpEstatus::tryFromName($status), $result->getEstatusCurp());
         $pdf = $scrapper->getPdf($result);
@@ -74,6 +83,7 @@ class ScrapperTest extends TestCase
                 $config['proxy']['password'],
             ),
         );
+        $scrapper->start();
         $result = $scrapper->getCurpData(new Curp($curp));
         self::assertEquals(CurpEstatus::tryFromName($status), $result->getEstatusCurp());
         $pdf = $scrapper->getPdf($result);
@@ -88,6 +98,7 @@ class ScrapperTest extends TestCase
         $scrapper = new Scrapper(headless: boolval(getenv('HEADLESS', true)));
         $this->expectException(ScrapperException::class);
         $this->expectExceptionMessageMatches('*Los datos ingresados no son correctos. Verifica e inténtalo de nuevo*');
+        $scrapper->start();
         $scrapper->getCurpData(new Curp('RIMF080128HASXNBA1'));
     }
 }

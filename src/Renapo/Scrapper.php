@@ -16,6 +16,7 @@ use Gam\CurpScrapper\Model\Curp;
 use Gam\CurpScrapper\Model\CurpResult;
 use Gam\CurpScrapper\Model\Proxy;
 use InvalidArgumentException;
+use LogicException;
 use RuntimeException;
 use Symfony\Component\Panther\Client;
 use Throwable;
@@ -39,7 +40,7 @@ class Scrapper
 
     public const PDF_URL = 'https://consultas.curp.gob.mx/CurpSP/pdfgobmx';
 
-    private Client $client;
+    private ?Client $client;
 
     public const NO_PROXY_LIST = [
         'accounts.google.com',
@@ -52,14 +53,22 @@ class Scrapper
         '*.png',
     ];
 
-    public const DEFAULT_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+    private const DEFAULT_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
     . 'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 Edg/122.0.0.0';
 
     private ?string $extensionPath;
 
     private string $userAgent;
 
-    private ChromeDevToolsDriver $devTools;
+    private ?ChromeDevToolsDriver $devTools;
+
+    private string $driverPath;
+
+    private bool $headless;
+
+    private ?Proxy $proxy;
+
+    private ?string $dataDir;
 
     public function __construct(
         string $driverPath = __DIR__ . '/../../build/chromedriver.exe',
@@ -68,17 +77,18 @@ class Scrapper
         ?string $dataDir = null,
     ) {
         if (!file_exists($driverPath)) {
-            throw new InvalidArgumentException(
-                'The specified driver does not exist. Hint: Run composer install-driver',
-            );
+            throw new InvalidArgumentException('The specified driver does not exist.',);
         }
-        $this->extensionPath = null;
+        if (!is_null($dataDir) && !file_exists($dataDir)) {
+            throw new InvalidArgumentException('The specified data directory does not exist.',);
+        }
+
         $this->userAgent = self::DEFAULT_UA;
-        $this->client = $this->createClient($driverPath, $headless, $proxy, $dataDir);
-        /** @var RemoteWebDriver $driver */
-        $driver = $this->client->getWebDriver();
-        $this->devTools = new ChromeDevToolsDriver($driver);
-        $this->start();
+        $this->extensionPath = $this->devTools = $this->client = null;
+        $this->driverPath = $driverPath;
+        $this->headless = $headless;
+        $this->proxy = $proxy;
+        $this->dataDir = $dataDir;
     }
 
     public function getUserAgent(): string
@@ -89,8 +99,13 @@ class Scrapper
     /**
      * @codeCoverageIgnore
      */
-    private function start(): void
+    public function start(): void
     {
+        $this->client = $this->createClient($this->driverPath, $this->headless, $this->proxy, $this->dataDir);
+        /** @var RemoteWebDriver $driver */
+        $driver = $this->client->getWebDriver();
+        $this->devTools = new ChromeDevToolsDriver($driver);
+
         $this->client->start();
         try {
             $this->client->executeScript("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})");
@@ -104,6 +119,9 @@ class Scrapper
      */
     private function cdpSettings(): void
     {
+        if ($this->client === null || $this->devTools === null) {
+            throw new LogicException('The method "start" must be called before');
+        }
         $getPropsJS = <<<'JS'
         let objectToInspect = window
         result = [];
@@ -146,6 +164,9 @@ class Scrapper
      */
     private function headless(): void
     {
+        if ($this->devTools === null) {
+            throw new LogicException('The method "start" must be called before');
+        }
         $noWebDriverJS = <<<'JS'
         Object.defineProperty(window, 'navigator', {
         value: new Proxy(navigator, {
@@ -180,6 +201,10 @@ class Scrapper
     {
         $this->headless();
         $this->cdpSettings();
+
+        if ($this->client === null) {
+            throw new LogicException('The method "start" must be called before');
+        }
 
         $this->client->get(self::MAIN_URL)->submitForm('Buscar', ['curp' => $curp->getContent()]);
 
@@ -264,6 +289,9 @@ class Scrapper
      */
     public function getPdf(CurpResult $result): string
     {
+        if ($this->client === null) {
+            throw new LogicException('The method "start" must be called before');
+        }
         $res = $this->client->get($result->getFullDownloadQuery());
         $htmlBody = $res->getCrawler()->filter('body');
 
@@ -279,6 +307,10 @@ class Scrapper
      */
     public function close(): void
     {
+        if ($this->client === null) {
+            throw new LogicException('The method "start" must be called before');
+        }
+
         $this->client->quit();
         if (!is_null($this->extensionPath)) {
             delete_directory($this->extensionPath);

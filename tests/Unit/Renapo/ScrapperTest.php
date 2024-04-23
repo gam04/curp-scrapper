@@ -16,6 +16,22 @@ class ScrapperTest extends TestCase
         new Scrapper('/does/not/exist', false);
     }
 
+    public function testThrowExceptionOnInvalidDataDir(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        new Scrapper(dataDir: '/does/not/exist');
+    }
+
+    public function testGetUserAgent(): void
+    {
+        $s = new Scrapper();
+        self::assertEquals(
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) ' .
+            'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 Edg/122.0.0.0',
+            $s->getUserAgent(),
+        );
+    }
+
     public function testNoProxyList(): void
     {
         self::assertEquals([
